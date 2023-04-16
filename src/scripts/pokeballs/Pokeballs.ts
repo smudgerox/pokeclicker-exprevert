@@ -58,12 +58,12 @@ class Pokeballs implements Feature {
             new Pokeball(GameConstants.Pokeball.Duskball, () => {
                 const now = new Date();
                 // If player in a dungeon or it's night time
-                if (App.game.gameState == GameConstants.GameState.dungeon || now.getHours() >= 18 || now.getHours() < 6) {
+                if (App.game.gameState == GameConstants.GameState.dungeon || [DayCyclePart.Dawn, DayCyclePart.Night].includes(DayCycle.currentDayCyclePart())) {
                     return 15;
                 }
                 return 0;
             }, 1000, 'Increased catch rate at night time or in dungeons', new RouteKillRequirement(10, GameConstants.Region.johto, 34)),
-            // TODO: this needs some sort of bonus, possibly extra dungeon tokens
+
             new Pokeball(GameConstants.Pokeball.Luxuryball, () => 0, 1250, 'A Luxury Poké Ball, awards a random currency for catches', new RouteKillRequirement(10, GameConstants.Region.johto, 34)),
 
             new Pokeball(GameConstants.Pokeball.Diveball, () => {
@@ -147,17 +147,18 @@ class Pokeballs implements Feature {
      * @param isShiny if the Pokémon is shiny.
      * @returns {GameConstants.Pokeball} pokéball to use.
      */
-    public calculatePokeballToUse(id: number, isShiny: boolean): GameConstants.Pokeball {
+    public calculatePokeballToUse(id: number, isShiny: boolean, isShadow: boolean): GameConstants.Pokeball {
         const alreadyCaught = App.game.party.alreadyCaughtPokemon(id);
         const alreadyCaughtShiny = App.game.party.alreadyCaughtPokemon(id, true);
+        const alreadyCaughtShadow = App.game.party.alreadyCaughtPokemon(id, false, true);
         const contagious = (App.game.party.getPokemon(id)?.pokerus == GameConstants.Pokerus.Contagious);
         const pokemon = PokemonHelper.getPokemonById(id);
         let pref: GameConstants.Pokeball;
 
         // just check against alreadyCaughtShiny as this returns false when you don't have the pokemon yet.
 
-        if (isShiny) {
-            if (!alreadyCaughtShiny) {
+        if (isShiny || isShadow) {
+            if ((!alreadyCaughtShiny && isShiny) || (!alreadyCaughtShadow && isShadow)) {
                 pref = this.notCaughtShinySelection;
             } else {
                 pref = this.alreadyCaughtShinySelection;
@@ -166,7 +167,8 @@ class Pokeballs implements Feature {
             if (!alreadyCaught) {
                 pref = this.notCaughtSelection;
             } else {
-                if (contagious) {
+                // If a pokeball is not selected for contagious pokemon, but there is one selected for caught pokemon, then use that on contagious pokemon as well.
+                if (contagious && this.alreadyCaughtContagiousSelection != GameConstants.Pokeball.None) {
                     pref = this.alreadyCaughtContagiousSelection;
                 } else {
                     pref = this.alreadyCaughtSelection;
