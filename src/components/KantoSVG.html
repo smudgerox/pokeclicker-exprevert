@@ -418,6 +418,13 @@
             })
         %>
 
+        <%- include('templates/mapTown',
+            { name: "Safari Zone"
+            , x: 47, y: 39
+            , width: 6, height: 5
+            })
+        %>
+
         <!--Cinnabar Island-->
         <%- include('templates/mapTown',
             { name: "Cinnabar Island"
@@ -598,14 +605,6 @@
         %>
 
         <%- include('templates/mapPOI',
-            { name: "Safari Zone"
-            , x: 47, y: 39
-            , width: 6, height: 5
-            , databind: "click:function(){Safari.startSafari()}, attr: { class: Safari.canAccess() ? 'completed' : 'locked' }"
-            })
-        %>
-
-        <%- include('templates/mapPOI',
             { name: "Underground Entrance"
             , x: 83, y: 30
             , width: 3, height: 4
@@ -760,6 +759,16 @@
         %>
 
         <%- include('templates/mapOverlay',
+            { name: "Anomaly Mewtwo"
+            , x: 56, y: 4
+            , width: 4, height: 4
+            , databind: "click: () => TemporaryBattleList['Anomaly Mewtwo 1'].protectedOnclick()"
+            , visible:  "TemporaryBattleList['Anomaly Mewtwo 1'] && TemporaryBattleList['Anomaly Mewtwo 1'].isVisible()"
+            , image: "assets/images/map/mewtwox.png"
+            })
+        %>
+
+        <%- include('templates/mapOverlay',
             { name: "Suicune"
             , x: 80, y: 1
             , width: 3, height: 4
@@ -788,6 +797,28 @@
             , image: "assets/images/map/snorlaxoverworld.png"
             })
         %>
+
+        <!--New Island-->
+        <%- include('templates/mapOverlay',
+            { x: 80, y: 50
+            , width: 4, height: 3
+            , databind: "click:function(){MapHelper.moveToTown('New Island')}, attr:{ class: MapHelper.calculateTownCssClass('New Island') }"
+            , visible:  "TownList['New Island'].isUnlocked()"
+            , image: "assets/images/map/new_island.png"
+            })
+        %>
+
+        <!--New Island extension-->
+        <%- include('templates/mapOverlay',
+            { x: 80, y: 50
+            , width: 4, height: 3
+            , databind: "click:function(){MapHelper.moveToTown('New Island')}, attr:{ class: MapHelper.calculateTownCssClass('New Island') }"
+            , visible:  "TownList['New Island'].isUnlocked()"
+            , image: "assets/images/map/transparent.png"
+            , connectedToTown: "New Island"
+            })
+        %>
+
     %>
     </g>
 

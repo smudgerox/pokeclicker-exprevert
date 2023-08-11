@@ -57,6 +57,7 @@ class Breeding implements Feature {
             ['Fennekin', 'Litleo'],
             ['Litten', 'Salandit'],
             ['Scorbunny', 'Sizzlipede'],
+            ['Fuecoco', 'Charcadet'],
         ];
         this.hatchList[EggType.Water] = [
             ['Squirtle', 'Lapras', 'Staryu', 'Slowpoke'],
@@ -67,6 +68,7 @@ class Breeding implements Feature {
             ['Froakie', 'Clauncher', 'Skrelp'],
             ['Popplio', 'Wimpod', 'Mareanie'],
             ['Sobble', 'Chewtle', 'Arrokuda'],
+            ['Quaxly'],
         ];
         this.hatchList[EggType.Grass] = [
             ['Bulbasaur', 'Oddish', 'Tangela', 'Paras'],
@@ -77,6 +79,7 @@ class Breeding implements Feature {
             ['Chespin', 'Skiddo', 'Phantump'],
             ['Rowlet', 'Morelull', 'Fomantis'],
             ['Grookey', 'Gossifleur','Applin'],
+            ['Sprigatito'],
         ];
         this.hatchList[EggType.Fighting] = [
             ['Hitmonlee', 'Hitmonchan', 'Machop', 'Mankey'],
@@ -107,6 +110,7 @@ class Breeding implements Feature {
             ['Goomy', 'Sliggoo', 'Goodra'],
             ['Turtonator', 'Drampa', 'Jangmo-o', 'Hakamo-o', 'Kommo-o'],
             ['Dreepy', 'Drakloak', 'Dragapult', 'Duraludon'],
+            ['Frigibax', 'Arctibax', 'Baxcalibur'],
         ];
         this.hatchList[EggType.Mystery] = [
             ['Gastly', 'Jigglypuff', 'Geodude', 'Doduo'],
@@ -114,7 +118,7 @@ class Breeding implements Feature {
             ['Trapinch', 'Sableye', 'Spoink'],
             ['Stunky', 'Bronzor'],
             ['Vanillite', 'Drilbur'],
-            ['Pancham', 'Honedge'],
+            ['Carbink', 'Honedge'],
             ['Mudbray', 'Rockruff'],
             ['Rolycoly', 'Milcery'],
         ];
@@ -182,16 +186,27 @@ class Breeding implements Feature {
         return slots && this._queueList().length < slots;
     }
 
-    public gainEgg(e: Egg, isHelper = false) {
+    public gainEgg(e: Egg, eggSlot = -1) {
         if (e.isNone()) {
             return false;
         }
-        for (let i = 0; i < this._eggList.length; i++) {
-            if (this._eggList[i]().isNone() && (isHelper || !this.hatcheryHelpers.hired()[i])) {
-                this._eggList[i](e);
+
+        if (eggSlot === -1) {
+            // Throw egg in the first empty non-Helper slot
+            for (let i = 0; i < this._eggList.length; i++) {
+                if (this._eggList[i]().isNone() && !this.hatcheryHelpers.hired()[i]) {
+                    this._eggList[i](e);
+                    return true;
+                }
+            }
+        } else {
+            // Throw egg in the Helper slot if it's empty
+            if (this._eggList[eggSlot]?.().isNone()) {
+                this._eggList[eggSlot](e);
                 return true;
             }
         }
+
         console.error(`Error: Could not place ${EggType[e.type]} Egg`);
         return false;
     }
@@ -317,17 +332,18 @@ class Breeding implements Feature {
         }
     }
 
-    public gainPokemonEgg(pokemon: PartyPokemon | PokemonListData, isHelper = false): boolean {
-        if (!this.hasFreeEggSlot(isHelper)) {
+    public gainPokemonEgg(pokemon: PartyPokemon | PokemonListData, eggSlot = -1): boolean {
+        if (eggSlot === -1 && !this.hasFreeEggSlot()) {
+            // Check that an empty, non-Helper slot exists
             Notifier.notify({
                 message: 'You don\'t have any free egg slots',
                 type: NotificationConstants.NotificationOption.warning,
             });
             return false;
         }
-        const egg = this.createEgg(pokemon.id);
 
-        const success = this.gainEgg(egg, isHelper);
+        const egg = this.createEgg(pokemon.id);
+        const success = this.gainEgg(egg, eggSlot);
 
         if (success && pokemon instanceof PartyPokemon) {
             pokemon.breeding = true;

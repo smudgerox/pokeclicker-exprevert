@@ -4,10 +4,11 @@ import Setting from '../settings/Setting';
 import GameHelper from '../GameHelper';
 import SettingOption from '../settings/SettingOption';
 import KeyItemType from '../enums/KeyItemType';
-import DevelopmentRequirement from '../requirements/DevelopmentRequirement';
 import Requirement from '../requirements/Requirement';
 import CustomRequirement from '../requirements/CustomRequirement';
 import PokemonType from '../enums/PokemonType';
+import EncounterType from '../enums/EncounterType';
+import QuestLineStepCompletedRequirement from '../requirements/QuestLineStepCompletedRequirement';
 
 class PokeballFilterOption<T, M = T> {
     public defaultSetting: Setting<T>;
@@ -28,7 +29,12 @@ class PokeballFilterOption<T, M = T> {
     }
 }
 
-const tempShadowRequirement = new DevelopmentRequirement();
+const tempShadowRequirement = new QuestLineStepCompletedRequirement('Shadows in the Desert', 3);
+
+const encounterTypeRequirements: Partial<Record<EncounterType, Requirement>> = {
+    [EncounterType.trainer]: tempShadowRequirement,
+    [EncounterType.ultraBeast]: new QuestLineStepCompletedRequirement('Ultra Beast Hunt', 2),
+};
 
 export const pokeballFilterOptions = {
     shiny: new PokeballFilterOption<boolean>(
@@ -117,6 +123,16 @@ export const pokeballFilterOptions = {
             optionValue: PokemonType,
             testValues: [PokemonType, PokemonType],
         ) => testValues.includes(optionValue),
+    ),
+
+    encounterType: new PokeballFilterOption<EncounterType>(
+        (type: EncounterType = EncounterType.route) => new Setting(
+            'pokeballFilterEncounterType',
+            'Encounter Type',
+            Object.values(EncounterType).map((v) => new SettingOption(v, v, encounterTypeRequirements[v])),
+            type,
+        ),
+        (type) => `Is ${GameHelper.anOrA(type)} ${type} encounter`,
     ),
 };
 
