@@ -15,6 +15,7 @@ interface EnemyOptions {
     requirement?: MultiRequirement | OneFromManyRequirement | Requirement,
     reward?: Amount,
     hide?: boolean,
+    hideTrainer?: boolean,
 }
 
 interface DetailedPokemon {
@@ -1380,7 +1381,7 @@ dungeonList['New Island'] = new Dungeon('New Island',
         new DungeonTrainer('Armored Mewtwo',
             [new GymPokemon('Rhydon', 18500, 40)],
             { weight: 1 }, ''),
-        new DungeonTrainer('Jessie And James',
+        new DungeonTrainer('Jessie and James',
             [new GymPokemon('Meowth', 150, 10)],
             { weight: 1 }, ''),
     ],
@@ -5686,13 +5687,6 @@ dungeonList['Under Colosseum'] = new Dungeon('Under Colosseum',
             ], { weight: 1 }, 'Fein', '(wes)'),
     ],
     91500, 134);
-
-dungeonList['Orre Colosseum'] = new Dungeon('Orre Colosseum', //Difficulty comperable to P2 Laboratory
-    [],
-    {},
-    5403000,
-    [],
-    396500, 134);
 
 dungeonList['Gateon Port Battles'] = new Dungeon('Gateon Port Battles',
     [
@@ -10156,13 +10150,13 @@ dungeonList['Pokémon Village'] = new Dungeon('Pokémon Village',
             ])}),
         new DungeonTrainer('Anomaly Mewtwo',
             [new GymPokemon('Mega Mewtwo X', 120000000, 70)],
-            { hide: true, requirement: new QuestLineCompletedRequirement('An Unrivaled Power')}, undefined, 'X'),
+            { hide: true, requirement: new QuestLineCompletedRequirement('An Unrivaled Power'), hideTrainer: true}, undefined, 'X'),
         new DungeonTrainer('Anomaly Mewtwo',
             [new GymPokemon('Mega Mewtwo Y', 120000000, 70)],
             { hide: true, requirement: new MultiRequirement([
                 new QuestLineStepCompletedRequirement('An Unrivaled Power', 16),
                 new QuestLineCompletedRequirement('An Unrivaled Power', GameConstants.AchievementOption.less),
-            ])}, undefined, 'Y'),
+            ]), hideTrainer: true}, undefined, 'Y'),
     ],
     725000, 20);
 
@@ -12433,6 +12427,24 @@ dungeonList['Crown Shrine'] = new Dungeon('Crown Shrine',
         new DungeonBossPokemon('Trevenant', 161099869, 60),
         new DungeonBossPokemon('Weavile', 161099869, 60),
         new DungeonBossPokemon('Calyrex', 169578810, 80, { hide: true, requirement: new QuestLineStepCompletedRequirement('The Crown of Galar', 8) }),
+    ],
+    2200000, 55);
+
+// Function, because we don't have 'player' on load
+const maxLairQuestStepRandomIndex = (index: number) => {
+    SeededRand.seed(+player.trainerId);
+    return SeededRand.shuffleArray([0, 1])[index];
+};
+dungeonList['Max Lair'] = new Dungeon('Max Lair',
+    ['Machop'],
+    {
+        common: [{loot: 'Lucky_egg'}],
+    },
+    33915762,
+    [
+        new DungeonBossPokemon('Machoke', 161099869, 60),
+        new DungeonBossPokemon('Gigantamax Machamp', 161099869, 60, {requirement: new QuestLineStepCompletedRequirement('TODO Gigantamax questline name', () => maxLairQuestStepRandomIndex(0))}),
+        new DungeonBossPokemon('Gigantamax Snorlax', 161099869, 60, {requirement: new QuestLineStepCompletedRequirement('TODO Gigantamax questline name', () => maxLairQuestStepRandomIndex(1))}),
     ],
     2200000, 55);
 
